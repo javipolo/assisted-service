@@ -94,6 +94,9 @@ function install_from_catalog_source() {
   else
     catalog_source=${catalog_source_name}
   fi
+
+  if [ "${DISCONNECTED}" != "true" ]; then
+    # In disconnected mode it should be applied already with a different image
   tee << EOCR >(oc apply -f -)
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
@@ -105,7 +108,10 @@ spec:
   image: ${INDEX_IMAGE}
   displayName: Assisted Test Registry
   publisher: Assisted Developer
----
+EOCR
+  fi
+
+  tee << EOCR >(oc apply -f -)
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -180,6 +186,12 @@ spec:
 $(mirror_config)
 EOCR
 
+  if [ "${DISCONNECTED}" = "true" ]; then
+    echo "Adding osImages to AgentServiceConfig because we're in disconnected mode"
+    timeout 10m bash -c "while true; do oc get -n ${ASSISTED_NAMESPACE} agentserviceconfig agent |& grep -ivE '(no resources found|not found)' && break || sleep 10; done"
+    oc patch -n ${ASSISTED_NAMESPACE} agentserviceconfig agent --type merge -p '{"spec":{"osImages":'$(echo "${OS_IMAGES}"| jq -c .|sed 's/openshift_version/openshiftVersion/g; s/cpu_architecture/cpuArchitecture/g; s/rootfs_url/rootFSUrl/g' )'}}'
+  fi
+
   wait_for_operator "assisted-service-operator" "${ASSISTED_NAMESPACE}"
   wait_for_condition "agentserviceconfigs/agent" "ReconcileCompleted" "5m"
   wait_for_pod "assisted-service" "${ASSISTED_NAMESPACE}" "app=assisted-service"
@@ -240,7 +252,7 @@ EOCR
 
 function from_index_image() {
   if [ "${DISCONNECTED}" = "true" ]; then
-    catalog_source_name="mirror-catalog-for-assisted-service-operator"
+    catalog_source_name=$ASSISTED_SERVICE_OPERATOR_CATALOG
     mirror_package "assisted-service-operator" \
         "${INDEX_IMAGE}" "${LOCAL_REGISTRY}" "${AUTHFILE}" "${catalog_source_name}"
     mirror_rhcos
@@ -254,9 +266,9 @@ function from_index_image() {
 function from_community_operators() {
   if [ "${DISCONNECTED}" = "true" ]; then
     INDEX_IMAGE="registry.redhat.io/redhat/community-operator-index:${INDEX_TAG}"
-    catalog_source_name="mirror-catalog-for-assisted-service-operator"
+    catalog_source_name=$ASSISTED_SERVICE_OPERATOR_CATALOG
     mirror_package "assisted-service-operator" \
-      "${INDEX_IMAGE}" "${LOCAL_REGISTRY}" "${AUTHFILE}" "${catalog_source_name}"
+        "${INDEX_IMAGE}" "${LOCAL_REGISTRY}" "${AUTHFILE}" "${catalog_source_name}"
     mirror_rhcos
   else
     catalog_source_name="community-operators"
@@ -266,14 +278,16 @@ function from_community_operators() {
 }
 
 function mirror_rhcos() {
-    rhcos_image=$(echo ${OS_IMAGES} | jq -r '.[].url')
-    mirror_rhcos_image=$(mirror_file "${rhcos_image}" "${IRONIC_IMAGES_DIR}" "${MIRROR_BASE_URL}")
+    for i in $(seq 0 $(($(echo ${OS_IMAGES} | jq length) - 1))); do
+        rhcos_image=$(echo ${OS_IMAGES} | jq -r ".[$i].url")
+        mirror_rhcos_image=$(mirror_file "${rhcos_image}" "${IRONIC_IMAGES_DIR}" "${MIRROR_BASE_URL}")
 
-    rhcos_rootfs=$(echo ${OS_IMAGES} | jq -r '.[].rootfs_url')
-    mirror_rhcos_rootfs=$(mirror_file "${rhcos_rootfs}" "${IRONIC_IMAGES_DIR}" "${MIRROR_BASE_URL}")
+        rhcos_rootfs=$(echo ${OS_IMAGES} | jq -r ".[$i].rootfs_url")
+        mirror_rhcos_rootfs=$(mirror_file "${rhcos_rootfs}" "${IRONIC_IMAGES_DIR}" "${MIRROR_BASE_URL}")
 
-    OS_IMAGES=$(echo ${OS_IMAGES} |
-      jq ".[].url=\"${mirror_rhcos_image}\" | .[].rootfs_url=\"${mirror_rhcos_rootfs}\"")
+        OS_IMAGES=$(echo ${OS_IMAGES} |
+          jq ".[$i].url=\"${mirror_rhcos_image}\" | .[$i].rootfs_url=\"${mirror_rhcos_rootfs}\"")
+    done
 }
 
 if [ -z "$@" ]; then

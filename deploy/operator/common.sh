@@ -5,11 +5,6 @@ if [ -z "${DISKS:-}" ]; then
     export DISKS=$(echo sd{b..f})
 fi
 
-export DISCONNECTED="${DISCONNECTED:-false}"
-if [ "${DISCONNECTED}" = "true" ]; then
-    export LOCAL_REGISTRY="${LOCAL_REGISTRY_DNS_NAME}:${LOCAL_REGISTRY_PORT}"
-fi
-
 ##############
 # Deployment #
 ##############
@@ -22,6 +17,7 @@ export SPOKE_NAMESPACE="${SPOKE_NAMESPACE:-assisted-spoke-cluster}"
 export HIVE_NAMESPACE="${HIVE_NAMESPACE:-hive}"
 export ASSISTED_UPGRADE_OPERATOR="${ASSISTED_UPGRADE_OPERATOR:-false}"
 export ASSISTED_SERVICE_OPERATOR_CATALOG="assisted-service-operator-catalog"
+export MIRROR_ASSISTED_SERVICE_OPERATOR_CATALOG="mirror-catalog-for-assisted-service-operator"
 
 ############
 # Versions #
@@ -45,3 +41,12 @@ fi
 export ASSISTED_OPENSHIFT_VERSION="${ASSISTED_OPENSHIFT_VERSION:-openshift-v${VERSION}}"
 export ASSISTED_OPENSHIFT_INSTALL_RELEASE_IMAGE="${ASSISTED_OPENSHIFT_INSTALL_RELEASE_IMAGE:-${RELEASE_IMAGE}}"
 export OS_IMAGES=$(echo ${DEFAULT_OS_IMAGES} | jq -rc 'map(select((.openshift_version|split(".")|map(tonumber)) >= [4,8]))')
+
+#######################
+# Handle disconnected #
+#######################
+export DISCONNECTED="${DISCONNECTED:-false}"
+if [ "${DISCONNECTED}" = "true" ]; then
+    export LOCAL_REGISTRY="${LOCAL_REGISTRY_DNS_NAME}:${LOCAL_REGISTRY_PORT}"
+    ASSISTED_SERVICE_OPERATOR_CATALOG=$MIRROR_ASSISTED_SERVICE_OPERATOR_CATALOG
+fi

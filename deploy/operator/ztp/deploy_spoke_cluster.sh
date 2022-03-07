@@ -94,6 +94,7 @@ function get_agents_with_role() {
 export role=master
 export -f wait_for_cmd_amount
 export -f get_agents_with_role
+
 timeout 20m bash -c "wait_for_cmd_amount ${SPOKE_CONTROLPLANE_AGENTS} 30 get_agents_with_role"
 echo "All ${SPOKE_CONTROLPLANE_AGENTS} agents have been discovered!"
 
@@ -118,5 +119,5 @@ echo "Cluster installation has been stopped (either for good or bad reasons)"
 wait_for_condition "agentclusterinstall/${ASSISTED_AGENT_CLUSTER_INSTALL_NAME}" "Completed" "1m" "${SPOKE_NAMESPACE}"
 echo "Cluster has been installed successfully!"
 
-wait_for_boolean_field "clusterdeployment/${ASSISTED_CLUSTER_DEPLOYMENT_NAME}" spec.installed "${SPOKE_NAMESPACE}"
+wait_for_boolean_field "clusterdeployment/${ASSISTED_CLUSTER_DEPLOYMENT_NAME}" spec.installed "${SPOKE_NAMESPACE}" "60"
 echo "Hive acknowledged cluster installation!"
