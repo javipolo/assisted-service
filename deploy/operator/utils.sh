@@ -51,6 +51,16 @@ function disk_to_wwn() {
     echo "0x0$(hash ${1} 15)"
 }
 
+function wait_for_object() {
+    object="$1"
+    namespace="${2:-}"
+
+    echo "Waiting for (${object}) on namespace (${namespace}) to be created..."
+    while true; do
+        oc get ${object} --namespace=${namespace} |& grep -ivE "(no resources found|not found)" && break || sleep 10
+    done
+}
+
 function wait_for_condition() {
     object="$1"
     condition="$2"

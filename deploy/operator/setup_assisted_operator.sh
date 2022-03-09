@@ -88,6 +88,8 @@ EOF
 }
 
 function install_from_catalog_source() {
+  export -f wait_for_object
+
   catalog_source_name="${1}"
   if [ "${ASSISTED_UPGRADE_OPERATOR}" = "true" ]; then
    catalog_source=${ASSISTED_SERVICE_OPERATOR_CATALOG}
@@ -188,8 +190,11 @@ EOCR
 
   if [ "${DISCONNECTED}" = "true" ]; then
     echo "Adding osImages to AgentServiceConfig because we're in disconnected mode"
-    timeout 10m bash -c "while true; do oc get -n ${ASSISTED_NAMESPACE} agentserviceconfig agent |& grep -ivE '(no resources found|not found)' && break || sleep 10; done"
-    oc patch -n ${ASSISTED_NAMESPACE} agentserviceconfig agent --type merge -p '{"spec":{"osImages":'$(echo "${OS_IMAGES}"| jq -c .|sed 's/openshift_version/openshiftVersion/g; s/cpu_architecture/cpuArchitecture/g; s/rootfs_url/rootFSUrl/g' )'}}'
+    timeout 10m bash -c "wait_for_object agentserviceconfigs/agent ${ASSISTED_NAMESPACE}"
+
+    # We need to patch agentserviceconfig to add the OS_IMAGES, but we need to rename the keys to be camelCase
+    OS_IMAGES_CAMELCASE=$(echo "${OS_IMAGES}" | sed 's/openshift_version/openshiftVersion/g; s/cpu_architecture/cpuArchitecture/g; s/rootfs_url/rootFSUrl/g' | jq -c .)
+    oc patch -n ${ASSISTED_NAMESPACE} agentserviceconfig agent --type merge -p '{"spec":{"osImages":'"${OS_IMAGES_CAMELCASE}"'}}'
   fi
 
   wait_for_operator "assisted-service-operator" "${ASSISTED_NAMESPACE}"

@@ -91,12 +91,12 @@ function mirror_file() {
   httpd_path="${2}"
   base_mirror_url="${3}"
 
-  local dir_name="$(dirname $(echo ${remote_url} | cut -d / -f 3-))"
-  local file_name="$(basename ${remote_url})"
-  mkdir -p "${httpd_path}/${dir_name}"
-  curl --retry 5 "${remote_url}" -o "${httpd_path}/${dir_name}/${file_name}"
+  # Get URL path by splitting by / and keeping fields 4 till last one
+  local url_path="$(echo ${remote_url} | cut -d / -f 4-)"
+  mkdir -p "$(dirname ${httpd_path}/${url_path})"
+  curl --retry 5 "${remote_url}" -o "${httpd_path}/${url_path}"
 
-  echo "${base_mirror_url}/${dir_name}/${file_name}"
+  echo "${base_mirror_url}/${url_path}"
 }
 
 function disable_default_indexes() {
