@@ -4031,11 +4031,12 @@ func (b *bareMetalInventory) RegisterInfraEnvInternal(
 
 func (b *bareMetalInventory) validateInfraEnvCreateParams(ctx context.Context, params installer.RegisterInfraEnvParams, cluster *common.Cluster) error {
 	var err error
-	if cluster != nil && cluster.CPUArchitecture != "" && cluster.CPUArchitecture != params.InfraenvCreateParams.CPUArchitecture {
-		err = errors.Errorf("Specified CPU architecture doesn't match the cluster (%s)",
-			cluster.CPUArchitecture)
-		return err
-	}
+	// TODO: Skip architecture mismatch check only if the release image is multiarch
+	// if cluster != nil && cluster.CPUArchitecture != "" && cluster.CPUArchitecture != params.InfraenvCreateParams.CPUArchitecture {
+	// 	err = errors.Errorf("Specified CPU architecture doesn't match the cluster (%s)",
+	// 		cluster.CPUArchitecture)
+	// 	return err
+	// }
 
 	if params.InfraenvCreateParams.Proxy != nil {
 		if err = validateProxySettings(params.InfraenvCreateParams.Proxy.HTTPProxy,
@@ -4795,17 +4796,19 @@ func (b *bareMetalInventory) BindHostInternal(ctx context.Context, params instal
 	if err = b.checkUpdateAccessToObj(ctx, cluster, "cluster", params.BindHostParams.ClusterID); err != nil {
 		return nil, err
 	}
-	infraEnv, err := common.GetInfraEnvFromDB(b.db, params.InfraEnvID)
-	if err != nil {
-		b.log.WithError(err).Errorf("Failed to get infra env %s", params.InfraEnvID)
-		return nil, common.NewApiError(http.StatusInternalServerError, err)
-	}
 
-	if cluster.CPUArchitecture != "" && cluster.CPUArchitecture != infraEnv.CPUArchitecture {
-		err = errors.Errorf("InfraEnv's CPU architecture (%s) doesn't match the cluster (%s)",
-			infraEnv.CPUArchitecture, cluster.CPUArchitecture)
-		return nil, common.NewApiError(http.StatusBadRequest, err)
-	}
+	// TODO: Skip architecture mismatch check only if the release image is multiarch
+	// infraEnv, err := common.GetInfraEnvFromDB(b.db, params.InfraEnvID)
+	// if err != nil {
+	// 	b.log.WithError(err).Errorf("Failed to get infra env %s", params.InfraEnvID)
+	// 	return nil, common.NewApiError(http.StatusInternalServerError, err)
+	// }
+
+	// if cluster.CPUArchitecture != "" && cluster.CPUArchitecture != infraEnv.CPUArchitecture {
+	// 	err = errors.Errorf("InfraEnv's CPU architecture (%s) doesn't match the cluster (%s)",
+	// 		infraEnv.CPUArchitecture, cluster.CPUArchitecture)
+	// 	return nil, common.NewApiError(http.StatusBadRequest, err)
+	// }
 
 	if err = b.clusterApi.AcceptRegistration(cluster); err != nil {
 		log.WithError(err).Errorf("failed to bind host <%s> to cluster %s due to: %s",

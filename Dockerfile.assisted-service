@@ -30,7 +30,7 @@ RUN CGO_ENABLED=0 GOFLAGS="" GO111MODULE=on go build -o /build/assisted-service-
 RUN CGO_ENABLED=0 GOFLAGS="" GO111MODULE=on go build -o /build/assisted-service-admission cmd/webadmission/main.go
 RUN CGO_ENABLED=0 GOFLAGS="" GO111MODULE=on go build -o /build/agent-installer-client cmd/agentbasedinstaller/client/main.go
 
-FROM quay.io/ocpmetal/oc-image:bug-1823143-multi-arch-ai-bug-2069976 as oc-image
+# FROM quay.io/ocpmetal/oc-image:bug-1823143-multi-arch-ai-bug-2069976 as oc-image
 
 # Create final image
 FROM quay.io/centos/centos:stream8
@@ -44,7 +44,15 @@ ARG WORK_DIR=/data
 RUN mkdir $WORK_DIR && chmod 775 $WORK_DIR
 
 #TODO: Use official oc client once it has ICSP support https://bugzilla.redhat.com/show_bug.cgi?id=1823143
-COPY --from=oc-image /oc /usr/local/bin/
+#COPY --from=oc-image /oc /usr/local/bin/
+
+# We need 4.11.0-rc.0 version of oc client until multi architecture images are supported in latest stable
+RUN curl -o /tmp/openshift-client-linux.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.11.0-rc.0/openshift-client-linux.tar.gz && \
+    mkdir /tmp/oc && \
+    tar xzf /tmp/openshift-client-linux.tar.gz -C /tmp/oc && \
+    cp /tmp/oc/oc /usr/local/bin/oc && \
+    rm -fr /tmp/openshift-client-linux.tar.gz /tmp/oc
+
 
 COPY --from=builder /build/assisted-service /assisted-service
 COPY --from=builder /build/assisted-service-operator /assisted-service-operator
