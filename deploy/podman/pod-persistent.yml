@@ -30,7 +30,8 @@ spec:
     envFrom:
     - configMapRef:
         name: config
-  - image: quay.io/edge-infrastructure/assisted-service:latest
+  # - image: quay.io/edge-infrastructure/assisted-service:latest
+  - image: quay.io/jpolo/assisted-service:multiarch
     name: service
     ports:
     - hostPort: 8090
