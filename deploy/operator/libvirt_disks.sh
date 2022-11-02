@@ -32,7 +32,7 @@ function create() {
                 # In order to make an absolute expected destination, we provide a WWN
                 # that could be derived from the disk name.
                 # The disk would be available as a link on /dev/disk/by-id/wwn-.
-                virsh attach-disk "${node}" "${img_path}" "${disk}" --wwn "$(disk_to_wwn ${disk})"
+                virsh attach-disk "${node}" "${img_path}" "${disk}" --targetbus scsi --wwn "$(disk_to_wwn ${disk})"
             else
                 echo "Disk ${disk} is already attached to ${node}. Skipping attachment"
             fi
