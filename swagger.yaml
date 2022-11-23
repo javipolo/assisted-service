@@ -4127,6 +4127,7 @@ definitions:
       - tang-connectivity-check
       - ntp-synchronizer
       - installation-disk-speed-check
+      - installation-disk-cleanup
       - container-image-availability
       - domain-resolution
       - stop-installation
@@ -5628,6 +5629,25 @@ definitions:
       io_sync_duration:
         type: integer
         description: The 99th percentile of fdatasync durations in milliseconds.
+      path:
+        type: string
+        description: The device path.
+
+  disk_cleanup_request:
+    type: object
+    required:
+      - path
+    properties:
+      path:
+        type: string
+        description: Disk to be wiped.
+
+  disk_cleanup_response:
+    type: object
+    properties:
+      successful:
+        type: boolean
+        description: Result of the cleanup operation.
       path:
         type: string
         description: The device path.

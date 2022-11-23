@@ -6543,6 +6543,31 @@ func init() {
         }
       }
     },
+    "disk_cleanup_request": {
+      "type": "object",
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "description": "Disk to be wiped.",
+          "type": "string"
+        }
+      }
+    },
+    "disk_cleanup_response": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "The device path.",
+          "type": "string"
+        },
+        "successful": {
+          "description": "Result of the cleanup operation.",
+          "type": "boolean"
+        }
+      }
+    },
     "disk_info": {
       "type": "object",
       "properties": {
@@ -9007,6 +9032,7 @@ func init() {
         "tang-connectivity-check",
         "ntp-synchronizer",
         "installation-disk-speed-check",
+        "installation-disk-cleanup",
         "container-image-availability",
         "domain-resolution",
         "stop-installation",
@@ -16158,6 +16184,31 @@ func init() {
         }
       }
     },
+    "disk_cleanup_request": {
+      "type": "object",
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "description": "Disk to be wiped.",
+          "type": "string"
+        }
+      }
+    },
+    "disk_cleanup_response": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "The device path.",
+          "type": "string"
+        },
+        "successful": {
+          "description": "Result of the cleanup operation.",
+          "type": "boolean"
+        }
+      }
+    },
     "disk_info": {
       "type": "object",
       "properties": {
@@ -18532,6 +18583,7 @@ func init() {
         "tang-connectivity-check",
         "ntp-synchronizer",
         "installation-disk-speed-check",
+        "installation-disk-cleanup",
         "container-image-availability",
         "domain-resolution",
         "stop-installation",

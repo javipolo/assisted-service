@@ -56,6 +56,9 @@ const (
 	// StepTypeInstallationDiskSpeedCheck captures enum value "installation-disk-speed-check"
 	StepTypeInstallationDiskSpeedCheck StepType = "installation-disk-speed-check"
 
+	// StepTypeInstallationDiskCleanup captures enum value "installation-disk-cleanup"
+	StepTypeInstallationDiskCleanup StepType = "installation-disk-cleanup"
+
 	// StepTypeContainerImageAvailability captures enum value "container-image-availability"
 	StepTypeContainerImageAvailability StepType = "container-image-availability"
 
@@ -86,7 +89,7 @@ var stepTypeEnum []interface{}
 
 func init() {
 	var res []StepType
-	if err := json.Unmarshal([]byte(`["connectivity-check","execute","inventory","install","free-network-addresses","dhcp-lease-allocate","api-vip-connectivity-check","tang-connectivity-check","ntp-synchronizer","installation-disk-speed-check","container-image-availability","domain-resolution","stop-installation","logs-gather","next-step-runner","upgrade-agent","download-boot-artifacts","reboot-for-reclaim"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["connectivity-check","execute","inventory","install","free-network-addresses","dhcp-lease-allocate","api-vip-connectivity-check","tang-connectivity-check","ntp-synchronizer","installation-disk-speed-check","installation-disk-cleanup","container-image-availability","domain-resolution","stop-installation","logs-gather","next-step-runner","upgrade-agent","download-boot-artifacts","reboot-for-reclaim"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
