@@ -15,6 +15,11 @@
       "contents": {{ executeTemplate "agent.service" . | toString | toJson }}
     },
     {
+        "name": "set-hostname-oci.service",
+        "enabled": true,
+        "contents": {{ executeTemplate "set-hostname-oci.service" . | toString | toJson }}
+    },
+    {
         "name": "selinux.service",
         "enabled": true,
         "contents": {{ executeTemplate "selinux.service" . | toString | toJson }}
@@ -72,6 +77,15 @@
           "name": "root"
       },
       "contents": { "source": "data:,{{.AGENT_FIX_BZ1964591}}" }
+    },
+    {
+      "overwrite": true,
+      "path": "/usr/local/bin/set-hostname-oci.sh",
+      "mode": 493,
+      "user": {
+          "name": "root"
+      },
+      "contents": { "source": "data:text/plain;charset=utf-8;base64,{{ executeTemplate "set-hostname-oci.sh" . | toBase64 }}" }
     },
     {
       "overwrite": true,

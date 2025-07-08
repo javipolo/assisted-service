@@ -1,0 +1,15 @@
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=root
+ExecStart=/usr/local/bin/set-hostname-oci.sh
+
+# Wait up to 5min
+TimeoutSec=300
+
+[Unit]
+Description=Set OCI hostname
+Before=agent.service
+
+[Install]
+WantedBy=multi-user.target
